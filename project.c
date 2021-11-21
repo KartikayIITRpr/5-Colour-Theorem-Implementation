@@ -7,7 +7,7 @@
 #define f(i,a,n) for( int i = a; i<n; i++)
 #define Max 100000
 #define NUMBER '0'
-#define buffMax 100
+#define buffMax 100000
 int buffp = 0;
 char buff[buffMax];
 
