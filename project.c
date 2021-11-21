@@ -2,17 +2,21 @@
 #include <stdlib.h>
 #include <stdbool.h>
 #include <string.h>
+#include <ctype.h>
 
 #define f(i,a,n) for( int i = a; i<n; i++)
-
-int c = 0;
+#define Max 100000
+#define NUMBER '0'
+#define buffMax 100
+int buffp = 0;
+char buff[buffMax];
 
 // structure for connected verices
 typedef struct adj_node {
     int vertex;
     struct adj_node *link;
 } node;
-// structure to store color time etc.
+// structure to store color etc.
 typedef struct adj_list {
     int color;
     node *head;
@@ -29,21 +33,43 @@ graph * create_graph (int);// to create graph
 void print (graph *);// print graph
 void print_color (graph *, int); // print color of specific vertex or node of planar graph
 void add ( graph *, int , int);// add edge in case of undirected graph
-bool back_track (graph *, int, int );
-void five_color ( graph *);
+bool back_track (graph *, int, int );// to know if the the previously conn
+void five_color ( graph *);// coloring function
+char getcha(void);// for taking the input of the edges
+void ungetcha(char);// for taking the input of the edges
+char getop(char[]);// for taking the input of the edges
 
 int main () {
     graph *g;
     int vertex; // no. of regions in the map
-    printf("No. of regions in the map: ");
+    printf("Number of vertices in the graph: ");
     scanf("%d", &vertex);
-    g = create_graph(vertex);
-    printf("The regions with connected boundaries i and j (1,2,..no. of regions) and when you are done type -1 -1 to exit\n");
-    int i, j;
-    scanf("%d %d", &i, &j);
-    while ( i >0 && j > 0 ) {
-        add(g, i-1, j-1);
-        scanf("%d %d", &i, &j);
+    g = create_graph(vertex);// creating graph of total verteices "vertx"
+    printf("Ensert edges of the planar graph vertices from 1 to total vertices and to quit type Q");
+    char type;
+    char s[Max];
+    int k = 0;
+    int i = 0,j=0;// vertices of the planar graph
+    type = getop(s);
+    while (type != EOF && type != 'Q') {
+        switch (type) {
+            case NUMBER:
+                if ( k == 0) {
+                    i = atof(s);
+                    k++;
+                }
+                else if ( k== 1) {
+                    j = atof(s);
+                    add(g, i-1, j-1);
+                    k--;
+                }
+                type = getop(s);
+                break;
+
+            default:
+                type = getop(s);
+                break;
+        }
     }
     five_color(g);
     print(g);
@@ -89,7 +115,7 @@ void add (graph *g1, int s, int v) {
     }
 }
 
-// printing graph g
+// printing graph g with color of the vertices
 void print (graph * g) {
     printf("Your graph is as follows:\n");
     f(i,0,g->total_v) {
@@ -164,6 +190,8 @@ void print (graph * g) {
     }
 }
 
+// seeing if the adjacent nodes are of same color or not
+// if they do 0 will return else 1 will return
 bool back_track (graph *g,int s, int x) {
     list *l = &g->arr[s];
     node *temp = l->head;
@@ -175,22 +203,41 @@ bool back_track (graph *g,int s, int x) {
     return 1;
 }
 
+//coloring the graph in five colors
 void five_color (graph *g) {
     f(i,0,g->total_v) {
         if ( g->arr[i].color <0) {
+            int c = 0;
             while (!back_track(g, i, c)) {
                 if ( c== 4) c = 0;
                 else c++;
             }
             g->arr[i].color = c;
-//            f(j,0,5) {
-//                if (back_track(g, i, j)) {
-//                    g->arr[i].color = j;
-//                    break;
-//                }
-//            }
+            
         }
     }
 }
 
-
+// the following graph is to take input
+char getcha ( ) {
+    return (buffp>0) ? buff[--buffp] : getchar();
+}
+void ungetcha (char c) {
+    if ( buffp < buffMax) buff[buffp++] = c;
+    else printf("Buffer is full");
+}
+char getop (char s[]) {
+    int i ;
+    char c;
+    while ( (s[0] = c = getcha()) == ' ' || c == '\t');
+    s[1] = '\0';
+    
+    if (!isdigit(c) ) {
+        return c;
+    }
+    i = 0;
+    if ( isdigit(c)) while ( isdigit(s[++i] = c = getcha()));
+    s[i] = '\0';
+    if ( c!= EOF) ungetcha(c);
+    return NUMBER;
+}
